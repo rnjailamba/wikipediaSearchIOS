@@ -126,16 +126,20 @@
                 NSString *title = [dict objectForKey:@"title"];
                 NSString *subtitle = [dict objectForKey:@"extract"];
                 NSDictionary *imageDict = [dict objectForKey:@"thumbnail"];
-                if(imageDict != nil && cell.tag == indexPath.row){
+                if(imageDict != nil){
                     NSString *source = [imageDict objectForKey:@"source"];
-                    if(source!= nil && cell.tag == indexPath.row){
-                        [cell.imageView sd_setImageWithURL:[NSURL URLWithString:source]];
+                    if(source!= nil){
+                        dispatch_async(dispatch_get_main_queue(), ^(){
+                            [cell.imageView sd_setImageWithURL:[NSURL URLWithString:source] placeholderImage:[UIImage imageNamed:@"place"]];
+                            [cell setNeedsLayout];
+
+                        });
                         cell.textView.text = source;
                         cell.imageView.hidden = NO;
                         cell.imageWidth.constant = 95;
                     }
                 }
-                if(imageDict == nil && cell.tag == indexPath.row){
+                else{
                     cell.imageView.hidden = YES;
                     cell.imageWidth.constant = 0;
                 }
@@ -175,9 +179,11 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     if(indexPath.section == 1){
+        dispatch_async(dispatch_get_main_queue(), ^(){
 
-        DetailViewController *detailVC = [DetailViewController new];
-        [self presentViewController:detailVC animated:YES completion:nil];
+            DetailViewController *detailVC = [DetailViewController new];
+            [self presentViewController:detailVC animated:YES completion:nil];
+        });
     }
 }
 
@@ -235,8 +241,9 @@
                 NSDictionary *dict = [pages objectForKey:val];
                 [self.results addObject:dict];
             }
-            [self.tableView reloadData];
-
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self.tableView reloadData];
+            });
         }
         
         
