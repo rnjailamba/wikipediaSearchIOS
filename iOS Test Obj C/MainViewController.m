@@ -12,7 +12,7 @@
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "DetailViewController.h"
 
-@interface MainViewController ()<UITableViewDataSource,UITableViewDelegate,UISearchBarDelegate>
+@interface MainViewController ()<UITableViewDataSource,UITableViewDelegate,UISearchBarDelegate,SDWebImageManagerDelegate>
 
 @property (nonatomic, strong) UISearchBar *searchBar;
 @property (nonatomic, strong) UITableView *tableView;
@@ -27,6 +27,7 @@
     [self setUpSearchBar];
     [self registerNib];
     self.results = [NSMutableArray new];
+    [SDWebImageManager sharedManager].delegate = self;
     self.currentSearch = @"";
     [self setUpTableViewController];//Which displays the results
     
@@ -131,7 +132,7 @@
                     if(source!= nil){
                         dispatch_async(dispatch_get_main_queue(), ^(){
                             [cell.imageView sd_setImageWithURL:[NSURL URLWithString:source] placeholderImage:[UIImage imageNamed:@"place"]];
-                            [cell setNeedsLayout];
+//                            [cell setNeedsLayout];
 
                         });
                         cell.textView.text = source;
@@ -250,9 +251,25 @@
     } failure:^(NSURLSessionTask *operation, NSError *error) {
         NSLog(@"Error: %@", error);
     }];
+}
 
+#pragma SDWebImageDelegate
 
+- (UIImage *)imageManager:(SDWebImageManager *)imageManager
+ transformDownloadedImage:(UIImage *)image
+                  withURL:(NSURL *)imageURL
+{
+    // Place your image size here
+    CGFloat width = 95.0f;
+    CGFloat height = 60.0f;
+    CGSize imageSize = CGSizeMake(width, height);
     
+    UIGraphicsBeginImageContext(imageSize);
+    [image drawInRect:CGRectMake(0, 0, width, height)];
+    image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return image;
 }
 
 @end
