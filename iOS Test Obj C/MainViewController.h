@@ -1,5 +1,5 @@
 //
-//  ViewController.h
+//  MainViewController.h
 //  iOS Test Obj C
 //
 //  Created by Deniz Aydemir on 8/24/16.
@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ViewController : UIViewController
+@interface MainViewController : UIViewController
 
 
 @end
