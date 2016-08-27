@@ -11,14 +11,13 @@
 #import <AFNetworking/AFNetworking.h>
 #import <SDWebImage/UIImageView+WebCache.h>
 #import "DetailViewController.h"
-#define open_weather_api_key @"1255ba5f70cf5adf3bd2ba9aaa7dd1dc"
-
 
 @interface MainViewController ()<UITableViewDataSource,UITableViewDelegate,UISearchBarDelegate>
 
 @property (nonatomic, strong) UISearchBar *searchBar;
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) NSMutableArray *results;
+@property (nonatomic) NSString *currentSearch;
 @end
 
 @implementation MainViewController
@@ -28,6 +27,7 @@
     [self setUpSearchBar];
     [self registerNib];
     self.results = [NSMutableArray new];
+    self.currentSearch = @"";
     [self setUpTableViewController];//Which displays the results
     
     
@@ -54,14 +54,13 @@
 
 -(void)setUpTableViewController{
     self.tableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 64, self.view.frame.size.width, self.view.frame.size.height - 64)];
-    
-
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
+    [self.view addSubview:self.tableView];
+
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"header"];
     [self.tableView registerNib:[UINib nibWithNibName:@"TableViewCell" bundle:nil] forCellReuseIdentifier:@"resultCell"];
     
-    [self.view addSubview:self.tableView];
 
 }
 
@@ -116,6 +115,7 @@
         cell.backgroundColor = [UIColor whiteColor];
         [cell.textView setFont:[UIFont systemFontOfSize:16]];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell.tag = indexPath.row;
 
 
         dispatch_async(dispatch_get_main_queue(), ^(){
@@ -126,15 +126,16 @@
                 NSString *title = [dict objectForKey:@"title"];
                 NSString *subtitle = [dict objectForKey:@"extract"];
                 NSDictionary *imageDict = [dict objectForKey:@"thumbnail"];
-                if(imageDict != nil){
+                if(imageDict != nil && cell.tag == indexPath.row){
                     NSString *source = [imageDict objectForKey:@"source"];
-                    if(source!= nil){
-                            [cell.imageView sd_setImageWithURL:[NSURL URLWithString:source]];
-
+                    if(source!= nil && cell.tag == indexPath.row){
+                        [cell.imageView sd_setImageWithURL:[NSURL URLWithString:source]];
+                        cell.textView.text = source;
+                        cell.imageView.hidden = NO;
+                        cell.imageWidth.constant = 95;
                     }
-                    
                 }
-                else{
+                if(imageDict == nil && cell.tag == indexPath.row){
                     cell.imageView.hidden = YES;
                     cell.imageWidth.constant = 0;
                 }
@@ -206,6 +207,7 @@
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
 {
     NSLog(@"%@",searchText);
+    self.currentSearch = searchText;
     NSDictionary *parameters = @{@"format":@"json",
                                  @"action":@"query",
                                  @"generator":@"search",
@@ -223,18 +225,19 @@
     [manager GET:@"https://en.wikipedia.org/w/api.php" parameters:parameters success:^(NSURLSessionTask *task, id responseObject) {
         
         //            Get data
-        self.results = [NSMutableArray new];
+        if(searchText == self.currentSearch){
 
-        id obj = [responseObject objectForKey:@"query"];
-        id pages = [obj objectForKey:@"pages"];
-        for(id val in pages){
-            NSDictionary *dict = [pages objectForKey:val];
-            [self.results addObject:dict];
-            
-            
-            
+            self.results = [NSMutableArray new];
+
+            id obj = [responseObject objectForKey:@"query"];
+            id pages = [obj objectForKey:@"pages"];
+            for(id val in pages){
+                NSDictionary *dict = [pages objectForKey:val];
+                [self.results addObject:dict];
+            }
+            [self.tableView reloadData];
+
         }
-        [self.tableView reloadData];
         
         
     } failure:^(NSURLSessionTask *operation, NSError *error) {
@@ -244,32 +247,5 @@
 
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 @end
