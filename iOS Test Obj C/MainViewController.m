@@ -18,6 +18,8 @@
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) NSMutableArray *results;
 @property (nonatomic) NSString *currentSearch;
+@property     UIActivityIndicatorView *spinner;
+
 @end
 
 @implementation MainViewController
@@ -30,8 +32,13 @@
     [SDWebImageManager sharedManager].delegate = self;
     self.currentSearch = @"";
     [self setUpTableViewController];//Which displays the results
-    
-    
+}
+
+-(void)setUpSpinner{
+    self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    self.spinner.center = CGPointMake(self.view.frame.size.width / 2, self.view.frame.size.height / 2);
+    self.spinner.hidesWhenStopped = YES;
+    [self.view addSubview:self.spinner];
 }
 
 -(void)setUpSearchBar{
@@ -229,6 +236,8 @@
 - (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
 {
     NSLog(@"%@",searchText);
+    [self.spinner startAnimating];
+
     self.currentSearch = searchText;
     NSDictionary *parameters = @{@"format":@"json",
                                  @"action":@"query",
@@ -259,6 +268,8 @@
             }
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self.tableView reloadData];
+                [self.spinner stopAnimating];
+
             });
         }
         
