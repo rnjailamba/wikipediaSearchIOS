@@ -130,18 +130,33 @@
                 if(imageDict != nil){
                     NSString *source = [imageDict objectForKey:@"source"];
                     if(source!= nil){
-                        dispatch_async(dispatch_get_main_queue(), ^(){
-                            [cell.imageView sd_setImageWithURL:[NSURL URLWithString:source] placeholderImage:[UIImage imageNamed:@"place"]];
-//                            [cell setNeedsLayout];
+                            [cell.resultImageView sd_setImageWithURL:[NSURL URLWithString:source] placeholderImage:[UIImage imageNamed:@"place"]];
+                        
+                            
+//                            [cell.imageView sd_setImageWithURL:[NSURL URLWithString:source] placeholderImage:[UIImage imageNamed:@"place"] completed:^(UIImage *image, NSError *error, SDImageCacheType cacheType, NSURL *imageURL) {
+//                                if (image) {
+//                                    dispatch_async(dispatch_get_main_queue(), ^(){
+//
+//                                        cell.imageView.image = image;
+//                                    });
+//                                
+//                                }
+//                                else
+//                                {
+//                                    
+//                                }
+//                            }];
+                        
+                            cell.imageView.clipsToBounds = YES;
 
-                        });
+                        
                         cell.textView.text = source;
-                        cell.imageView.hidden = NO;
+                        cell.resultImageView.hidden = NO;
                         cell.imageWidth.constant = 95;
                     }
                 }
                 else{
-                    cell.imageView.hidden = YES;
+                    cell.resultImageView.hidden = YES;
                     cell.imageWidth.constant = 0;
                 }
                 cell.title.text = title;
